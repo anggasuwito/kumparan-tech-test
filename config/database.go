@@ -4,16 +4,19 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"kumparan-tech-test/config/migration"
+	"strconv"
 )
 
 type dbConfig struct {
-	host     string
-	user     string
-	password string
-	dbName   string
-	port     string
-	sslMode  string
-	timezone string
+	host        string
+	user        string
+	password    string
+	dbName      string
+	port        string
+	sslMode     string
+	timezone    string
+	autoMigrate string
 }
 
 func getDatabase(config dbConfig) (*sql.DB, error) {
@@ -28,6 +31,19 @@ func getDatabase(config dbConfig) (*sql.DB, error) {
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, err
+	}
+
+	if autoMigrate, _ := strconv.ParseBool(config.autoMigrate); autoMigrate {
+		migrations := []error{
+			migration.CreateTableArticle(db),
+			migration.CreateTableAuthor(db),
+			migration.InitialDataAuthor(db),
+		}
+		for _, e := range migrations {
+			if e != nil {
+				return nil, e
+			}
+		}
 	}
 
 	return db, nil

@@ -27,13 +27,14 @@ func SetConfig() {
 	}
 
 	dbMaster, err := getDatabase(dbConfig{
-		host:     os.Getenv("DB_HOST"),
-		user:     os.Getenv("DB_USER"),
-		password: os.Getenv("DB_PASSWORD"),
-		dbName:   os.Getenv("DB_NAME"),
-		port:     os.Getenv("DB_PORT"),
-		sslMode:  os.Getenv("DB_SSL"),
-		timezone: os.Getenv("DB_TIMEZONE"),
+		host:        os.Getenv("DB_HOST"),
+		user:        os.Getenv("DB_USER"),
+		password:    os.Getenv("DB_PASSWORD"),
+		dbName:      os.Getenv("DB_NAME"),
+		port:        os.Getenv("DB_PORT"),
+		sslMode:     os.Getenv("DB_SSL"),
+		timezone:    os.Getenv("DB_TIMEZONE"),
+		autoMigrate: os.Getenv("DB_AUTO_MIGRATE"),
 	})
 	if err != nil {
 		log.Fatal("[config] failed connecting database " + err.Error())
