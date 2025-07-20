@@ -3,7 +3,9 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"kumparan-tech-test/internal/domain/model"
+	"strings"
 )
 
 type AuthorRepo interface {
@@ -22,9 +24,75 @@ func NewAuthorRepo(masterDB *sql.DB) AuthorRepo {
 }
 
 func (r *authorRepo) GetAuthorByIDs(ctx context.Context, req []string) (resp []*model.Author, err error) {
-	return nil, nil
+	var (
+		query = `SELECT 
+    			au.id,
+    			au.created_at,
+    			au.updated_at,
+    			au.name    			
+    		FROM author au `
+		params = []interface{}{}
+	)
+	//build param base on req length
+	queryParam := []string{}
+	for _, v := range req {
+		queryParam = append(queryParam, "?")
+		params = append(params, v)
+	}
+	if len(queryParam) > 0 {
+		query += fmt.Sprintf(`WHERE au.id IN (%v) `, strings.Join(queryParam, ", "))
+	}
+
+	//get data
+	rows, err := r.masterDB.QueryContext(ctx, query, params...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var author model.Author
+		err = rows.Scan(
+			&author.ID, &author.CreatedAt, &author.UpdatedAt, &author.Name,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		resp = append(resp, &author)
+	}
+
+	if err = rows.Close(); err != nil {
+		return nil, err
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 func (r *authorRepo) GetAuthorByID(ctx context.Context, req string) (resp *model.Author, err error) {
-	return nil, nil
+	var (
+		author = model.Author{}
+		query  = `SELECT 
+    			au.id,
+    			au.created_at,
+    			au.updated_at,
+    			au.name    			
+    		FROM author au
+    		WHERE au.id = ?`
+		params = []interface{}{
+			req,
+		}
+	)
+
+	err = r.masterDB.QueryRowContext(ctx, query, params...).
+		Scan(&author.ID, &author.CreatedAt, &author.UpdatedAt, &author.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &author, nil
 }

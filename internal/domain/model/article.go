@@ -10,6 +10,8 @@ import (
 type Article struct {
 	BaseModel
 
+	Author *Author
+
 	AuthorID string
 	Title    string
 	Body     string
