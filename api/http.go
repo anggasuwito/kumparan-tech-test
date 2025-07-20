@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"kumparan-tech-test/config"
 	handler "kumparan-tech-test/internal/handler/http"
-	"kumparan-tech-test/internal/handler/http/middleware"
 	"kumparan-tech-test/internal/repository"
 	"kumparan-tech-test/internal/usecase"
 	"kumparan-tech-test/internal/utils"
@@ -18,10 +17,8 @@ import (
 )
 
 func setupGlobalMiddlewares(r *gin.Engine) {
-	//r.Use(cors())
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
-	r.Use(middleware.RateLimiter)
 }
 
 func setupRouters(r *gin.Engine) {
@@ -29,13 +26,12 @@ func setupRouters(r *gin.Engine) {
 
 	r.GET("", func(c *gin.Context) { utils.ResponseSuccess(c, "Success run "+cfg.AppVersion, nil) })
 
-	txWrapper := repository.NewTransactionWrapper(cfg.DBMaster)
-	concertRepo := repository.NewConcertRepo(cfg.DBMaster)
+	articleRepo := repository.NewArticleRepo(cfg.DBMaster)
+	authorRepo := repository.NewAuthorRepo(cfg.DBMaster)
 
-	concertUC := usecase.NewConcertUC(txWrapper, concertRepo)
+	articleUC := usecase.NewArticleUC(articleRepo, authorRepo)
 
-	handler.NewConcertHandler(concertUC).SetupHandlers(r)
-	handler.NewUserHandler(concertUC).SetupHandlers(r)
+	handler.NewArticleHandler(articleUC).SetupHandlers(r)
 }
 
 func StartHttpServer() {

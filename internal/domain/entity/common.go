@@ -17,19 +17,3 @@ type ListPaginationResponse struct {
 	TotalData   int64 `json:"total_data"`
 	PerPage     int64 `json:"per_page"`
 }
-
-type JWTClaimUser struct {
-	ID        string `json:"id"`
-	Phone     string `json:"phone"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Address   string `json:"address"`
-}
-
-type JWTClaimAdmin struct {
-	ID        string `json:"id"`
-	Phone     string `json:"phone"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Address   string `json:"address"`
-}
