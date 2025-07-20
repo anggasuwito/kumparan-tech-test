@@ -39,7 +39,7 @@ func (r *articleRepo) CreateArticle(ctx context.Context, req *model.Article) err
 		query = `INSERT INTO article 
     			(id, created_at, author_id, title, body)
 			  VALUES 
-			    (?, ?, ?, ?, ?)`
+			    ($1, $2, $3, $4, $5)`
 		params = []interface{}{
 			req.ID,
 			req.CreatedAt.Time,
@@ -71,12 +71,12 @@ func (r *articleRepo) GetListArticle(ctx context.Context, req *entity.GetListArt
     			au.updated_at,
     			au.name    			
     		FROM article a
-    		LEFT JOIN author au ON a.author_id = au.id
+    		LEFT JOIN author au ON a.author_id = au.id::text
     		WHERE a.deleted_at IS NULL `
 		queryCount = `SELECT
     			COUNT(*)
     		FROM article a
-    		LEFT JOIN author au ON a.author_id = au.id
+    		LEFT JOIN author au ON a.author_id = au.id::text
     		WHERE a.deleted_at IS NULL `
 		params = []interface{}{}
 	)
@@ -89,15 +89,15 @@ func (r *articleRepo) GetListArticle(ctx context.Context, req *entity.GetListArt
 
 		switch s.Field {
 		case "keyword":
-			condition := `AND (a.title ILIKE ? OR a.body ILIKE ?) `
+			condition := fmt.Sprintf(`AND (a.title ILIKE $%v OR a.body ILIKE $%v) `, len(params)+1, len(params)+2)
 			query += condition
 			queryCount += condition
-			params = append(params, []string{s.Value, s.Value})
+			params = append(params, []interface{}{"%" + s.Value + "%", "%" + s.Value + "%"}...)
 		case "author_name":
-			condition := `AND au.name = ? `
+			condition := fmt.Sprintf(`AND au.name ILIKE $%v `, len(params)+1)
 			query += condition
 			queryCount += condition
-			params = append(params, s.Value)
+			params = append(params, "%"+s.Value+"%")
 		}
 	}
 
@@ -120,8 +120,8 @@ func (r *articleRepo) GetListArticle(ctx context.Context, req *entity.GetListArt
 	}
 
 	//build LIMIT OFFSET
-	query += `LIMIT ? OFFSET ? `
-	params = append(params, []int64{req.Limit, offset})
+	query += fmt.Sprintf(`LIMIT $%v OFFSET $%v `, len(params)+1, len(params)+2)
+	params = append(params, []interface{}{req.Limit, offset}...)
 
 	//get data
 	rows, err := r.masterDB.QueryContext(ctx, query, params...)

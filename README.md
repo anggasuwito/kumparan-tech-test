@@ -24,9 +24,16 @@ HTTP_PORT=10001
 ## 3.Example request & response
 
 - API Create New Article (Success)
-
+![img_2.png](img_2.png)
 
 - API Create New Article (Failed)
 ![img_1.png](img_1.png)
 
-- API Get List Article (Success)
+- API Get List Article (Success - No Filter)
+![img_3.png](img_3.png)
+
+- API Get List Article (Success - Filter Keyword)
+![img_4.png](img_4.png)
+
+- API Get List Article (Success - Filter Author Name)
+![img_5.png](img_5.png)

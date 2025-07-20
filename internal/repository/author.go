@@ -35,8 +35,8 @@ func (r *authorRepo) GetAuthorByIDs(ctx context.Context, req []string) (resp []*
 	)
 	//build param base on req length
 	queryParam := []string{}
-	for _, v := range req {
-		queryParam = append(queryParam, "?")
+	for i, v := range req {
+		queryParam = append(queryParam, fmt.Sprintf("$%v", i+1))
 		params = append(params, v)
 	}
 	if len(queryParam) > 0 {
@@ -82,7 +82,7 @@ func (r *authorRepo) GetAuthorByID(ctx context.Context, req string) (resp *model
     			au.updated_at,
     			au.name    			
     		FROM author au
-    		WHERE au.id = ?`
+    		WHERE au.id = $1`
 		params = []interface{}{
 			req,
 		}

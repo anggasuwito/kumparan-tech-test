@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"kumparan-tech-test/internal/constant"
 	"kumparan-tech-test/internal/domain/entity"
 	"kumparan-tech-test/internal/domain/model"
@@ -33,7 +35,6 @@ func NewArticleUC(
 func (u *articleUC) CreateArticle(ctx context.Context, req *entity.CreateArticleRequest) (resp *entity.CreateArticleResponse, err error) {
 	var (
 		article = &model.Article{}
-		author  = &model.Author{}
 	)
 
 	if err = req.ValidateRequest(); err != nil {
@@ -41,8 +42,11 @@ func (u *articleUC) CreateArticle(ctx context.Context, req *entity.CreateArticle
 	}
 
 	//validate author
-	_, err = u.authorRepo.GetAuthorByID(ctx, req.AuthorID)
+	author, err := u.authorRepo.GetAuthorByID(ctx, req.AuthorID)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, utils.ErrBadRequest("author not found", "articleUC.CreateArticle.authorRepo.GetAuthorByID")
+		}
 		return nil, utils.ErrInternal("failed get author by id : "+err.Error(), "articleUC.CreateArticle.authorRepo.GetAuthorByID")
 	}
 
